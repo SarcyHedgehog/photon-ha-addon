@@ -1,0 +1,14 @@
+{
+  "name": "photon-ha",
+  "version": "1.0.0-photon",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bridge": "node photon-bridge.mjs",
+    "check": "node --check photon-bridge.mjs && node --check remote-app.js && node --check admin-app.js",
+    "test:integration": "node tests/integration.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

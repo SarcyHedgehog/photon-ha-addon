@@ -1,0 +1,27 @@
+name: Photon HA Bridge
+version: "0.1.0"
+slug: photon_ha_bridge
+description: Private Photon Realtime bridge for selected Home Assistant entities
+url: https://github.com/SarcyHedgehog/photon-ha-addon
+arch:
+  - amd64
+startup: application
+boot: auto
+init: false
+homeassistant_api: true
+ingress: true
+ingress_port: 8765
+panel_icon: mdi:home-assistant
+panel_title: Photon HA
+options:
+  photon_app_id: ""
+  photon_region: eu
+  room_name: photon-ha-home
+  remote_password: ""
+  debug: false
+schema:
+  photon_app_id: str
+  photon_region: str
+  room_name: str
+  remote_password: password
+  debug: bool

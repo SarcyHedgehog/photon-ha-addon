@@ -1,0 +1,25 @@
+name: Validate add-on
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install production dependencies
+        working-directory: photon_ha
+        run: npm ci --omit=dev
+      - name: Check JavaScript
+        working-directory: photon_ha
+        run: |
+          node --check photon-bridge.mjs
+          node --check admin-app.js
+          node --check addon-entry.mjs
+      - name: Build amd64 image
+        run: docker build --tag photon-ha-addon:test photon_ha

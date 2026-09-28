@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Photon HA Entity Picker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell wide">
+    <header class="hero compact">
+      <div><p class="eyebrow">Local administration</p><h1>Photon HA</h1><p class="muted">Choose exactly what remote users may see and control.</p></div>
+      <span id="admin-status" class="status connecting">Loading</span>
+    </header>
+    <section class="panel picker-toolbar">
+      <input id="picker-search" type="search" placeholder="Search name, entity, device or area…">
+      <select id="domain-filter"><option value="">All domains</option></select>
+      <label class="check"><input id="selected-only" type="checkbox"> Selected only</label>
+      <button id="save-picker" class="primary">Save selection</button>
+    </section>
+    <section class="summary-row">
+      <span id="discovered-count"></span><span id="selected-count"></span><span id="bridge-room"></span>
+    </section>
+    <div id="picker-list" class="picker-list"></div>
+  </main>
+  <script type="module" src="admin-app.js"></script>
+</body>
+</html>
