@@ -1,5 +1,5 @@
 name: Photon HA Bridge
-version: "0.1.0"
+version: "0.1.1"
 slug: photon_ha_bridge
 description: Private Photon Realtime bridge for selected Home Assistant entities
 url: https://github.com/SarcyHedgehog/photon-ha-addon

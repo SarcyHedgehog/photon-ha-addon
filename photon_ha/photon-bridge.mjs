@@ -321,6 +321,10 @@ class PhotonBridge {
       clearTimeout(joinTimeout);
       resolveInitialJoin();
     };
+    this.client.onActorJoin = (actor) => {
+      if (actor.actorNr === this.client.myActor().actorNr) return;
+      this.send(EVENT.BRIDGE_HELLO, { online: true, at: Date.now() }, [actor.actorNr]);
+    };
     this.client.onEvent = (code, content, actorNr) => this.onEvent(code, content || {}, actorNr);
     this.client.onActorLeave = (actor) => this.authenticatedActors.delete(actor.actorNr);
     this.client.onError = (_code, message) => {
@@ -402,7 +406,8 @@ class PhotonBridge {
 
   broadcastSnapshot() {
     if (!this.client?.isJoinedToRoom?.()) return;
-    this.sendSnapshot();
+    const targetActors = [...this.authenticatedActors];
+    if (targetActors.length) this.sendSnapshot(targetActors);
   }
 
   sendSnapshot(targetActors) {
