@@ -71,6 +71,11 @@ function controlFor(entityId, attributes = {}) {
   return { type: "read_only" };
 }
 
+function visualAttributes(attributes = {}) {
+  const keys = ["brightness", "rgb_color", "hs_color", "xy_color", "color_temp_kelvin", "color_mode"];
+  return Object.fromEntries(keys.filter((key) => attributes[key] !== undefined).map((key) => [key, attributes[key]]));
+}
+
 function serviceCallFor(entityId, request) {
   const domain = entityId.split(".")[0];
   const target = { entity_id: entityId };
@@ -397,6 +402,7 @@ class PhotonBridge {
         available: !["unavailable", "unknown"].includes(metadata.state),
         icon: metadata.attributes.icon || "",
         unit: metadata.attributes.unit_of_measurement || "",
+        attributes: visualAttributes(metadata.attributes),
         areaName: metadata.areaName,
         control: metadata.control,
       };

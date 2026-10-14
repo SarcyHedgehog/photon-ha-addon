@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Shares selected light colour and brightness attributes with authenticated remote views.
+
 ## 0.1.1
 
 - Sends Home Assistant state snapshots only to authenticated remote clients.
