@@ -42,6 +42,27 @@ function safeEqual(left, right) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+function accessProfilesFor(config) {
+  const configured = config.accessProfiles || {
+    remote: { password: config.remotePassword, entities: "all" },
+  };
+  const profiles = new Map();
+  for (const [id, value] of Object.entries(configured)) {
+    const password = String(value?.password || "");
+    if (!password) throw new Error(`Access profile ${id} must define a password`);
+    const entities = value.entities === "all"
+      ? null
+      : new Set(Array.isArray(value.entities) ? value.entities.map(String) : []);
+    profiles.set(id, { id, passwordHash: sha256(password), entities });
+  }
+  if (!profiles.size) throw new Error("At least one access profile must be configured");
+  return profiles;
+}
+
+function profileAllows(profile, entityId) {
+  return profile?.entities === null || profile?.entities?.has(entityId);
+}
+
 function controlFor(entityId, attributes = {}) {
   const domain = entityId.split(".")[0];
   if (["light", "switch", "input_boolean", "fan", "automation"].includes(domain)) {
@@ -275,8 +296,8 @@ class PhotonBridge {
     this.config = config;
     this.ha = ha;
     this.getExposed = getExposed;
-    this.authenticatedActors = new Set();
-    this.passwordHash = sha256(config.remotePassword);
+    this.actorProfiles = new Map();
+    this.accessProfiles = accessProfilesFor(config);
     this.revision = 0;
     this.snapshotTimer = null;
   }
@@ -331,7 +352,7 @@ class PhotonBridge {
       this.send(EVENT.BRIDGE_HELLO, { online: true, at: Date.now() }, [actor.actorNr]);
     };
     this.client.onEvent = (code, content, actorNr) => this.onEvent(code, content || {}, actorNr);
-    this.client.onActorLeave = (actor) => this.authenticatedActors.delete(actor.actorNr);
+    this.client.onActorLeave = (actor) => this.actorProfiles.delete(actor.actorNr);
     this.client.onError = (_code, message) => {
       log(`Photon error: ${message}`);
       rejectInitialJoin(new Error(message || "Photon connection failed"));
@@ -348,22 +369,30 @@ class PhotonBridge {
 
   onEvent(code, content, actorNr) {
     if (code === EVENT.AUTH_REQUEST) {
-      const ok = safeEqual(content.passwordHash || "", this.passwordHash);
-      if (ok) this.authenticatedActors.add(actorNr);
+      const profile = this.accessProfiles.get(String(content.view || ""));
+      const ok = Boolean(profile) && safeEqual(content.passwordHash || "", profile.passwordHash);
+      if (ok) this.actorProfiles.set(actorNr, profile);
+      else this.actorProfiles.delete(actorNr);
       this.send(EVENT.AUTH_RESULT, {
         ok,
         message: ok ? "Connected" : "Incorrect password",
+        profile: ok ? profile.id : undefined,
         bridgeActor: this.client.myActor().actorNr,
       }, [actorNr]);
-      if (ok) this.sendSnapshot([actorNr]);
+      if (ok) this.sendSnapshot([actorNr], profile);
       return;
     }
     if (code === EVENT.COMMAND_REQUEST) this.executeCommand(content, actorNr);
   }
 
   async executeCommand(request, actorNr) {
-    if (!this.authenticatedActors.has(actorNr)) {
+    const profile = this.actorProfiles.get(actorNr);
+    if (!profile) {
       this.commandResult(actorNr, request.requestId, false, "Not authenticated");
+      return;
+    }
+    if (!profileAllows(profile, request.entityId)) {
+      this.commandResult(actorNr, request.requestId, false, "Entity is not available in this view");
       return;
     }
     const exposure = this.getExposed().entities.find((item) => item.entityId === request.entityId);
@@ -389,8 +418,8 @@ class PhotonBridge {
     this.snapshotTimer = setTimeout(() => this.broadcastSnapshot(), 120);
   }
 
-  buildSnapshot() {
-    const entities = this.getExposed().entities.map((exposure) => {
+  buildSnapshot(profile) {
+    const entities = this.getExposed().entities.filter((exposure) => profileAllows(profile, exposure.entityId)).map((exposure) => {
       const state = this.ha.states.get(exposure.entityId);
       if (!state) return { ...exposure, state: "unavailable", available: false, control: { type: "read_only" } };
       const metadata = this.ha.entityMetadata(state);
@@ -412,12 +441,11 @@ class PhotonBridge {
 
   broadcastSnapshot() {
     if (!this.client?.isJoinedToRoom?.()) return;
-    const targetActors = [...this.authenticatedActors];
-    if (targetActors.length) this.sendSnapshot(targetActors);
+    for (const [actorNr, profile] of this.actorProfiles) this.sendSnapshot([actorNr], profile);
   }
 
-  sendSnapshot(targetActors) {
-    this.send(EVENT.SNAPSHOT, this.buildSnapshot(), targetActors);
+  sendSnapshot(targetActors, profile) {
+    this.send(EVENT.SNAPSHOT, this.buildSnapshot(profile), targetActors);
   }
 
   send(code, content, targetActors) {
@@ -503,8 +531,11 @@ function readBody(request) {
 async function main() {
   if (!fs.existsSync(CONFIG_PATH)) throw new Error(`Bridge configuration not found: ${CONFIG_PATH}`);
   const config = readJson(CONFIG_PATH);
-  for (const key of ["photonAppId", "roomName", "remotePassword", "haWebSocketUrl", "haToken"]) {
+  for (const key of ["photonAppId", "roomName", "haWebSocketUrl", "haToken"]) {
     if (!config[key]) throw new Error(`bridge.config.json must define ${key}`);
+  }
+  if (!config.accessProfiles && !config.remotePassword) {
+    throw new Error("bridge.config.json must define accessProfiles or remotePassword");
   }
   config.photonRegion ||= "eu";
   config.photonSdkPath ||= "vendor/photon.min.js";

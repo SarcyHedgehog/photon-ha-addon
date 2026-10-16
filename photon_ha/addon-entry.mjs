@@ -25,6 +25,16 @@ const config = {
   photonSdkPath: "vendor/photon.min.js",
   roomName: String(options.room_name).trim(),
   remotePassword: String(options.remote_password),
+  accessProfiles: {
+    remote: {
+      password: String(options.remote_password),
+      entities: "all",
+    },
+    study: {
+      password: String(options.study_password || options.remote_password),
+      entities: Array.isArray(options.study_entities) ? options.study_entities.map(String) : [],
+    },
+  },
   haWebSocketUrl: "ws://supervisor/core/websocket",
   haToken: supervisorToken,
   adminHost: "0.0.0.0",

@@ -1,5 +1,5 @@
 name: Photon HA Bridge
-version: "0.1.2"
+version: "0.2.0"
 slug: photon_ha_bridge
 description: Private Photon Realtime bridge for selected Home Assistant entities
 url: https://github.com/SarcyHedgehog/photon-ha-addon
@@ -18,10 +18,27 @@ options:
   photon_region: eu
   room_name: photon-ha-home
   remote_password: ""
+  study_password: ""
+  study_entities:
+    - light.office_light_switch_l1
+    - light.office_light_switch_l2
+    - light.office_standard_lamp
+    - light.rgb_strip_lights
+    - light.office_light_switch_l3
+    - fan.office_heater
+    - switch.screen
+    - switch.office_standard
+    - binary_sensor.studypresence_occupancy
+    - binary_sensor.study_door_contact
+    - binary_sensor.study_leak_detector_water_leak
+    - sensor.study_door_device_temperature
+    - sensor.back_garden_motion_illuminance
   debug: false
 schema:
   photon_app_id: str
   photon_region: str
   room_name: str
   remote_password: password
+  study_password: password
+  study_entities: [str]
   debug: bool

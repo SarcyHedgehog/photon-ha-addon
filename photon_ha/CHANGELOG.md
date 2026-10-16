@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+- Adds separate Remote and Study passwords.
+- Filters snapshots and commands using bridge-enforced per-view entity permissions.
+- Keeps upgrades compatible by temporarily falling back to the Remote password when
+  the new Study password has not yet been set.
+
 ## 0.1.2
 
 - Shares selected light colour and brightness attributes with authenticated remote views.

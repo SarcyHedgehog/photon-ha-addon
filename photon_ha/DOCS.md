@@ -9,6 +9,9 @@ through a private Photon Realtime room.
 - **Photon region**: normally `eu`.
 - **Room name**: a private, hard-to-guess room name unique to this installation.
 - **Remote password**: a strong password entered by remote users.
+- **Study password**: a different password for the 3D Study. If left blank during
+  an upgrade, it temporarily falls back to the Remote password.
+- **Study entities**: the entity IDs the Study profile may receive or control.
 - **Debug**: leave disabled unless diagnosing a connection problem.
 
 The add-on receives a short-lived internal Home Assistant token from Supervisor.
@@ -24,8 +27,9 @@ controllable. Nothing is exposed until it has been selected and saved.
 
 - Home Assistant is not exposed directly to the internet.
 - The public remote never receives a Home Assistant token.
-- All commands are checked against the local entity allow-list.
-- Use a unique room name and a strong remote password.
+- All snapshots and commands are checked against both the local entity allow-list
+  and the authenticated view's access profile.
+- Use a unique room name and different strong passwords for Remote and Study.
 
 The current password protocol is suitable for private testing. Before offering
 the bridge as a general public service, replace it with Photon Custom
