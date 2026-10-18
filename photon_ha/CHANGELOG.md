@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3
+
+- Adds the heater and office-monitor daily energy sensors to the default Study profile.
+
 ## 0.2.2
 
 - Migrates the saved shared entity list as well as the Study access profile when

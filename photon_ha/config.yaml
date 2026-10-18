@@ -1,5 +1,5 @@
 name: Photon HA Bridge
-version: "0.2.2"
+version: "0.2.3"
 slug: photon_ha_bridge
 description: Private Photon Realtime bridge for selected Home Assistant entities
 url: https://github.com/SarcyHedgehog/photon-ha-addon
@@ -32,6 +32,8 @@ options:
     - binary_sensor.study_door_contact
     - binary_sensor.study_leak_detector_water_leak
     - sensor.study_door_device_temperature
+    - sensor.heater_today_s_consumption
+    - sensor.office_standard_today_s_consumption
     - sensor.back_garden_motion_illuminance
   debug: false
 schema:
