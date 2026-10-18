@@ -1,5 +1,5 @@
 name: Photon HA Bridge
-version: "0.2.0"
+version: "0.2.1"
 slug: photon_ha_bridge
 description: Private Photon Realtime bridge for selected Home Assistant entities
 url: https://github.com/SarcyHedgehog/photon-ha-addon
@@ -25,7 +25,7 @@ options:
     - light.office_standard_lamp
     - light.rgb_strip_lights
     - light.office_light_switch_l3
-    - fan.office_heater
+    - switch.heater
     - switch.screen
     - switch.office_standard
     - binary_sensor.studypresence_occupancy

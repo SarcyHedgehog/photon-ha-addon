@@ -7,6 +7,9 @@ const configPath = path.join(DATA, "bridge.config.json");
 const exposedPath = path.join(DATA, "exposed-entities.json");
 
 const options = JSON.parse(fs.readFileSync(optionsPath, "utf8"));
+const entityRenames = new Map([
+  ["fan.office_heater", "switch.heater"],
+]);
 const required = ["photon_app_id", "room_name", "remote_password"];
 for (const name of required) {
   if (!String(options[name] || "").trim()) {
@@ -32,7 +35,9 @@ const config = {
     },
     study: {
       password: String(options.study_password || options.remote_password),
-      entities: Array.isArray(options.study_entities) ? options.study_entities.map(String) : [],
+      entities: Array.isArray(options.study_entities)
+        ? options.study_entities.map((entityId) => entityRenames.get(String(entityId)) || String(entityId))
+        : [],
     },
   },
   haWebSocketUrl: "ws://supervisor/core/websocket",

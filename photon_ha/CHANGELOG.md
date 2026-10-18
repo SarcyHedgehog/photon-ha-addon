@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Migrates the Study heater permission from the obsolete `fan.office_heater` entity
+  to `switch.heater`, including existing installations that retain the old option.
+
 ## 0.2.0
 
 - Adds separate Remote and Study passwords.
