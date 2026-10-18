@@ -10,7 +10,8 @@ let selected = new Map();
 async function load() {
   const [status, discovered, exposed] = await Promise.all([api("api/status"), api("api/entities"), api("api/exposed")]);
   entities = discovered.filter((entity) => !entity.disabled).sort((a, b) => `${a.areaName} ${a.name}`.localeCompare(`${b.areaName} ${b.name}`));
-  selected = new Map(exposed.entities.map((item) => [item.entityId, item]));
+  const knownEntityIds = new Set(entities.map((entity) => entity.entityId));
+  selected = new Map(exposed.entities.filter((item) => knownEntityIds.has(item.entityId)).map((item) => [item.entityId, item]));
   const domains = [...new Set(entities.map((entity) => entity.domain))].sort();
   dom.domain.innerHTML += domains.map((domain) => `<option>${escapeHtml(domain)}</option>`).join("");
   dom.status.textContent = status.haConnected ? "HA online" : "HA offline";

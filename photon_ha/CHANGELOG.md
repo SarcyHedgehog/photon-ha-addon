@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2
+
+- Migrates the saved shared entity list as well as the Study access profile when
+  an entity ID changes.
+- Drops stale, unavailable selections from the picker before saving so an old
+  entity can no longer block an otherwise valid update.
+
 ## 0.2.1
 
 - Migrates the Study heater permission from the obsolete `fan.office_heater` entity

@@ -10,6 +10,7 @@ const options = JSON.parse(fs.readFileSync(optionsPath, "utf8"));
 const entityRenames = new Map([
   ["fan.office_heater", "switch.heater"],
 ]);
+const migrateEntityId = (entityId) => entityRenames.get(String(entityId)) || String(entityId);
 const required = ["photon_app_id", "room_name", "remote_password"];
 for (const name of required) {
   if (!String(options[name] || "").trim()) {
@@ -36,7 +37,7 @@ const config = {
     study: {
       password: String(options.study_password || options.remote_password),
       entities: Array.isArray(options.study_entities)
-        ? options.study_entities.map((entityId) => entityRenames.get(String(entityId)) || String(entityId))
+        ? options.study_entities.map(migrateEntityId)
         : [],
     },
   },
@@ -52,6 +53,19 @@ fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o6
 
 if (!fs.existsSync(exposedPath)) {
   fs.copyFileSync(path.join(process.cwd(), "exposed-entities.example.json"), exposedPath);
+} else {
+  const exposed = JSON.parse(fs.readFileSync(exposedPath, "utf8"));
+  if (Array.isArray(exposed.entities)) {
+    const migrated = new Map();
+    for (const item of exposed.entities) {
+      const entityId = migrateEntityId(item.entityId);
+      migrated.set(entityId, { ...item, entityId });
+    }
+    const entities = [...migrated.values()];
+    if (JSON.stringify(entities) !== JSON.stringify(exposed.entities)) {
+      fs.writeFileSync(exposedPath, `${JSON.stringify({ ...exposed, entities }, null, 2)}\n`, { mode: 0o600 });
+    }
+  }
 }
 
 process.env.PHOTON_HA_CONFIG = configPath;
